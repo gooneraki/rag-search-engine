@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import string
 
 
 def main() -> None:
@@ -12,10 +13,12 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="Search query")
 
     args = parser.parse_args()
+    translator = str.maketrans("", "", string.punctuation)
 
     match args.command:
         case "search":
-            print(f"Searching for: {args.query}")
+            searchQuery = args.query
+            print(f"Searching for: {searchQuery}")
             
             result_list = []
 
@@ -24,8 +27,9 @@ def main() -> None:
                 movieContents = data["movies"]
 
             for movie in movieContents:
-                if args.query.lower()  in movie["title"].lower():
-                    result_list.append(movie["title"])
+                movieTitle = movie["title"]
+                if searchQuery.translate(translator).lower() in movieTitle.translate(translator).lower():
+                    result_list.append(movieTitle)
 
             for i,result in enumerate(result_list[:5]):
                 print(f"{i+1}. {result}")
