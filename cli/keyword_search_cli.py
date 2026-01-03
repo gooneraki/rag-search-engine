@@ -4,6 +4,8 @@ import argparse
 import json
 import string
 
+from utils import anyWordiInWords
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -28,10 +30,16 @@ def main() -> None:
 
             for movie in movieContents:
                 movieTitle = movie["title"]
-                if searchQuery.translate(translator).lower() in movieTitle.translate(translator).lower():
+                movieTitleClean = movieTitle.translate(translator).lower()
+                movieTitleWords = [x for x in movieTitleClean.split(" ") if len(x) > 0]
+
+                searchQueryClean = searchQuery.translate(translator).lower()
+                searchQueryWords = [x for x in searchQueryClean.split(" ") if len(x) > 0]
+
+                if anyWordiInWords(searchQueryWords, movieTitleWords):
                     result_list.append(movieTitle)
 
-            for i,result in enumerate(result_list[:5]):
+            for i,result in enumerate(result_list[:10]):
                 print(f"{i+1}. {result}")
         case _:
             parser.print_help()
