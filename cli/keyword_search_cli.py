@@ -4,7 +4,7 @@ import argparse
 import json
 import string
 
-from utils import anyWordiInWords,readStopWords
+from utils import is_any_word_in_words, read_stop_words, get_search_results
 
 
 def main() -> None:
@@ -21,28 +21,16 @@ def main() -> None:
         case "search":
             print(f"Searching for: {args.query}")
             
-            result_list = []
             searchQuery = args.query
 
-            stopWords = readStopWords("data/stopwords.txt")
-            
-
+            stopWords = read_stop_words("data/stopwords.txt")
             with open("data/movies.json") as f:
                 data = json.load(f)
                 movieContents = data["movies"]
+            
+            result_list = get_search_results(searchQuery,movieContents,stopWords)
 
-            for movie in movieContents:
-                movieTitle = movie["title"]
-                movieTitleClean = movieTitle.translate(translator).lower()
-                movieTitleWords = [x for x in movieTitleClean.split(" ") if len(x) > 0 and x not in stopWords]
-
-                searchQueryClean = searchQuery.translate(translator).lower()
-                searchQueryWords = [x for x in searchQueryClean.split(" ") if len(x) > 0 and x not in stopWords]
-
-                if anyWordiInWords(searchQueryWords, movieTitleWords):
-                    result_list.append(movieTitle)
-
-            for i,result in enumerate(result_list[:10]):
+            for i,result in enumerate(result_list[:5]):
                 print(f"{i+1}. {result}")
         case _:
             parser.print_help()
