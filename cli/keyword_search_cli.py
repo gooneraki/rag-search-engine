@@ -2,9 +2,9 @@
 
 import argparse
 import json
-import string
 
-from utils import is_any_word_in_words, read_stop_words, get_search_results
+from utils import read_stop_words, get_search_results
+from inverted_index import InvertedIndex
 
 
 def main() -> None:
@@ -13,9 +13,10 @@ def main() -> None:
 
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
+    
+    build_parser = subparsers.add_parser("build", help="Build inverted index")
 
     args = parser.parse_args()
-    translator = str.maketrans("", "", string.punctuation)
 
     match args.command:
         case "search":
@@ -32,6 +33,17 @@ def main() -> None:
 
             for i,result in enumerate(result_list[:5]):
                 print(f"{i+1}. {result}")
+
+        case "build":
+            print("Building inverted index...")
+            with open("data/movies.json") as f:
+                data = json.load(f)
+                movieContents = data["movies"]
+            index = InvertedIndex()
+            index.build(movieContents)
+            index.save()
+            docs = index.get_documents('merida')
+            print(f"First document for token 'merida' = {docs[0]}")
         case _:
             parser.print_help()
 
