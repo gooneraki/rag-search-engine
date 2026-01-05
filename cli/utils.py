@@ -15,6 +15,13 @@ def read_stop_words(filePath):
         stopWords = f.read().splitlines()
     return set(stopWords)
 
+def clean_words(words, stopWords):
+    translator = str.maketrans("", "", string.punctuation)
+    queryWords = words.translate(translator).lower()
+    queryWords = [x for x in queryWords.split(" ") if len(x) > 0 and x not in stopWords]
+    queryWords = [stemmer.stem(word) for word in queryWords]
+    return queryWords
+
 def get_search_results(query, movieContents, stopWords):
     translator = str.maketrans("", "", string.punctuation)
     result_list = []

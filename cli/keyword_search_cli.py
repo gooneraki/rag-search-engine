@@ -3,7 +3,7 @@
 import argparse
 import json
 
-from utils import read_stop_words, get_search_results
+from utils import read_stop_words, get_search_results, clean_words
 from inverted_index import InvertedIndex
 
 
@@ -21,18 +21,26 @@ def main() -> None:
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
-            
-            searchQuery = args.query
+
+            index = InvertedIndex()
+            try:
+                index.load()
+            except FileNotFoundError as e:
+                print(f"Error: {e}")
+                return
 
             stopWords = read_stop_words("data/stopwords.txt")
-            with open("data/movies.json") as f:
-                data = json.load(f)
-                movieContents = data["movies"]
+            searchQuery = clean_words(args.query, stopWords)
             
-            result_list = get_search_results(searchQuery,movieContents,stopWords)
-
-            for i,result in enumerate(result_list[:5]):
-                print(f"{i+1}. {result}")
+            result_ids = set()
+            for term in searchQuery:
+                doc_ids = index.get_documents(term)
+                result_ids.update(doc_ids)
+            
+            results = sorted(list(result_ids))[:5]
+            for doc_id in results:
+                movie = index.docmap[doc_id]
+                print(f"{movie['title']} (ID: {doc_id})")
 
         case "build":
             print("Building inverted index...")
@@ -42,8 +50,6 @@ def main() -> None:
             index = InvertedIndex()
             index.build(movieContents)
             index.save()
-            docs = index.get_documents('merida')
-            print(f"First document for token 'merida' = {docs[0]}")
         case _:
             parser.print_help()
 
