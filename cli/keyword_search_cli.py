@@ -15,6 +15,9 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="Search query")
     
     build_parser = subparsers.add_parser("build", help="Build inverted index")
+    term_parser = subparsers.add_parser("tf", help="Get term frequency in a document")
+    term_parser.add_argument("doc_id", type=int, help="Document ID")
+    term_parser.add_argument("term", type=str, help="Term to search for")
 
     args = parser.parse_args()
 
@@ -44,12 +47,25 @@ def main() -> None:
 
         case "build":
             print("Building inverted index...")
-            with open("data/movies.json") as f:
-                data = json.load(f)
-                movieContents = data["movies"]
             index = InvertedIndex()
-            index.build(movieContents)
+            index.build()
             index.save()
+
+        case "tf":
+            index = InvertedIndex()
+            
+            try:
+                index.load()
+            except FileNotFoundError as e:
+                print(f"Error: {e}")
+                return
+            
+            try:
+                tf = index.get_tf(args.doc_id, args.term)
+                print(tf)
+            except KeyError:
+                print("0")
+
         case _:
             parser.print_help()
 
