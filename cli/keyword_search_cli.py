@@ -1,25 +1,34 @@
 #!/usr/bin/env python3
-
+"""
+Docstring for cli.keyword_search_cli
+"""
 import argparse
 import math
 
 from utils import read_stop_words, clean_words
-from inverted_index import InvertedIndex,tokenize_text
+from inverted_index import InvertedIndex, tokenize_text
 
 
 def main() -> None:
+    """
+    Docstring for main
+    """
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    subparsers = parser.add_subparsers(
+        dest="command", help="Available commands")
 
-    search_parser = subparsers.add_parser("search", help="Search movies using BM25")
+    search_parser = subparsers.add_parser(
+        "search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
-    
-    build_parser = subparsers.add_parser("build", help="Build inverted index")
-    term_parser = subparsers.add_parser("tf", help="Get term frequency in a document")
+
+    # build_parser = subparsers.add_parser("build", help="Build inverted index")
+    term_parser = subparsers.add_parser(
+        "tf", help="Get term frequency in a document")
     term_parser.add_argument("doc_id", type=int, help="Document ID")
     term_parser.add_argument("term", type=str, help="Term to search for")
 
-    idf_parser = subparsers.add_parser("idf", help="Get inverse document frequency of a term")
+    idf_parser = subparsers.add_parser(
+        "idf", help="Get inverse document frequency of a term")
     idf_parser.add_argument("term", type=str, help="Term to search for")
 
     args = parser.parse_args()
@@ -35,14 +44,14 @@ def main() -> None:
                 print(f"Error: {e}")
                 return
 
-            stopWords = read_stop_words("data/stopwords.txt")
-            searchQuery = clean_words(args.query, stopWords)
-            
+            stop_words = read_stop_words("data/stopwords.txt")
+            search_query = clean_words(args.query, stop_words)
+
             result_ids = set()
-            for term in searchQuery:
+            for term in search_query:
                 doc_ids = index.get_documents(term)
                 result_ids.update(doc_ids)
-            
+
             results = sorted(list(result_ids))[:5]
             for doc_id in results:
                 movie = index.docmap[doc_id]
@@ -56,20 +65,20 @@ def main() -> None:
 
         case "idf":
             index = InvertedIndex()
-            
+
             try:
                 index.load()
             except FileNotFoundError as e:
                 print(f"Error: {e}")
                 return
-            
-            
+
             tokenized_term = tokenize_text(args.term)
             if len(tokenized_term) > 1:
                 print("Error: Please provide a single term for IDF calculation.")
                 return
             elif len(tokenized_term) == 0:
-                print(f"Error: No valid term provided after tokenization for '{args.term}'.")
+                print(
+                    f"Error: No valid term provided after tokenization for '{args.term}'.")
                 return
 
             term = tokenized_term[0]
@@ -82,13 +91,13 @@ def main() -> None:
 
         case "tf":
             index = InvertedIndex()
-            
+
             try:
                 index.load()
             except FileNotFoundError as e:
                 print(f"Error: {e}")
                 return
-            
+
             try:
                 tf = index.get_tf(args.doc_id, args.term)
                 print(tf)
