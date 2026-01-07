@@ -97,6 +97,19 @@ class InvertedIndex:
         idf = self.get_idf(term)
         return tf * idf
 
+    def get_bm25_idf(self, term: str) -> float:
+        """ Docstring for get_bm25_idf """
+        tokens = tokenize_text(term)
+        if len(tokens) != 1:
+            raise ValueError("term must be a single token")
+        token = tokens[0]
+
+        doc_count = len(self.docmap)
+        term_doc_count = len(self.index[token])
+
+        return math.log((doc_count - term_doc_count + 0.5) /
+                        (term_doc_count + 0.5) + 1)
+
 
 def preprocess_text(text: str) -> str:
     """ Docstring for preprocess_text """
@@ -123,3 +136,16 @@ def tokenize_text(text: str) -> list[str]:
     for word in filtered_words:
         stemmed_words.append(stemmer.stem(word))
     return stemmed_words
+
+
+def bm25_idf_command(term: str) -> float:
+    """ Docstring for bm25_idf_command """
+    index = InvertedIndex()
+
+    try:
+        index.load()
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return
+
+    return index.get_bm25_idf(term)
