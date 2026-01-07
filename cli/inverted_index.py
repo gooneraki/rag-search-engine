@@ -10,6 +10,7 @@ from collections import defaultdict, Counter
 from nltk.stem import PorterStemmer
 
 from lib.search_utils import (
+    BM25_K1,
     CACHE_DIR,
     load_movies,
     load_stopwords,
@@ -110,6 +111,11 @@ class InvertedIndex:
         return math.log((doc_count - term_doc_count + 0.5) /
                         (term_doc_count + 0.5) + 1)
 
+    def get_bm25_tf(self, doc_id, term, k1=BM25_K1):
+        """ Docstring for get_bm25_tf """
+        tf = self.get_tf(doc_id, term)
+        return (tf * (k1 + 1)) / (tf + k1)
+
 
 def preprocess_text(text: str) -> str:
     """ Docstring for preprocess_text """
@@ -149,3 +155,21 @@ def bm25_idf_command(term: str) -> float:
         return
 
     return index.get_bm25_idf(term)
+
+
+def bm25_tf_command(doc_id: int, term: str, k1: float = BM25_K1):
+    """ Docstring for bm25_tf_command """
+    index = InvertedIndex()
+
+    try:
+        index.load()
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return
+
+    try:
+        bm25_tf = index.get_bm25_tf(doc_id, term, k1)
+        return bm25_tf
+    except KeyError:
+        print(f"Document ID {doc_id} not found.")
+        return 0.0
