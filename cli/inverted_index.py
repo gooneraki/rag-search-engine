@@ -1,7 +1,10 @@
+"""
+Docstring for cli.inverted_index
+"""
 import os
 import pickle
 import string
-from collections import defaultdict,Counter
+from collections import defaultdict, Counter
 
 from nltk.stem import PorterStemmer
 
@@ -11,16 +14,23 @@ from lib.search_utils import (
     load_stopwords,
 )
 
+
 class InvertedIndex:
+    """
+    Docstring for InvertedIndex
+    """
+
     def __init__(self) -> None:
         self.index = defaultdict(set)
         self.docmap: dict[int, dict] = {}
         self.term_frequencies: dict[int, Counter] = {}
         self.index_path = os.path.join(CACHE_DIR, "index.pkl")
         self.docmap_path = os.path.join(CACHE_DIR, "docmap.pkl")
-        self.term_frequencies_path = os.path.join(CACHE_DIR, "term_frequencies.pkl")
+        self.term_frequencies_path = os.path.join(
+            CACHE_DIR, "term_frequencies.pkl")
 
     def build(self) -> None:
+        """ Docstring for build """
         movies = load_movies()
         for m in movies:
             doc_id = m["id"]
@@ -29,6 +39,7 @@ class InvertedIndex:
             self.__add_document(doc_id, doc_description)
 
     def save(self) -> None:
+        """ Docstring for save """
         os.makedirs(CACHE_DIR, exist_ok=True)
         with open(self.index_path, "wb") as f:
             pickle.dump(self.index, f)
@@ -38,6 +49,7 @@ class InvertedIndex:
             pickle.dump(self.term_frequencies, f)
 
     def load(self) -> None:
+        """ Docstring for load """
         with open(self.index_path, "rb") as f:
             self.index = pickle.load(f)
         with open(self.docmap_path, "rb") as f:
@@ -46,11 +58,14 @@ class InvertedIndex:
             self.term_frequencies = pickle.load(f)
 
     def get_documents(self, term: str) -> list[int]:
+        """ Docstring for get_documents """
         doc_ids = self.index.get(term, set())
         return sorted(list(doc_ids))
 
     def __add_document(self, doc_id: int, text: str) -> None:
+        """ Docstring for __add_document """
         tokens = tokenize_text(text)
+
         if doc_id not in self.term_frequencies:
             self.term_frequencies[doc_id] = Counter()
         self.term_frequencies[doc_id].update(tokens)
@@ -58,6 +73,7 @@ class InvertedIndex:
             self.index[token].add(doc_id)
 
     def get_tf(self, doc_id, term):
+        """ Docstring for get_tf """
         tokenized_term = tokenize_text(term)
         if len(tokenized_term) > 1:
             raise ValueError("Term must be a single token")
@@ -67,13 +83,14 @@ class InvertedIndex:
 
 
 def preprocess_text(text: str) -> str:
+    """ Docstring for preprocess_text """
     text = text.lower()
     text = text.translate(str.maketrans("", "", string.punctuation))
     return text
 
 
-
 def tokenize_text(text: str) -> list[str]:
+    """ Docstring for tokenize_text """
     text = preprocess_text(text)
     tokens = text.split()
     valid_tokens = []
@@ -90,4 +107,3 @@ def tokenize_text(text: str) -> list[str]:
     for word in filtered_words:
         stemmed_words.append(stemmer.stem(word))
     return stemmed_words
-
