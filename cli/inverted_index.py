@@ -11,6 +11,7 @@ from nltk.stem import PorterStemmer
 
 from lib.search_utils import (
     BM25_K1,
+    BM25_B,
     CACHE_DIR,
     load_movies,
     load_stopwords,
@@ -25,11 +26,29 @@ class InvertedIndex:
     def __init__(self) -> None:
         self.index = defaultdict(set)
         self.docmap: dict[int, dict] = {}
+        self.doc_lengths: dict[int, int] = {}
         self.term_frequencies: dict[int, Counter] = {}
         self.index_path = os.path.join(CACHE_DIR, "index.pkl")
         self.docmap_path = os.path.join(CACHE_DIR, "docmap.pkl")
+        self.doc_lengths_path = os.path.join(CACHE_DIR, "doc_lengths.pkl")
         self.term_frequencies_path = os.path.join(
             CACHE_DIR, "term_frequencies.pkl")
+
+    def __add_document(self, doc_id: int, text: str) -> None:
+        """ Docstring for __add_document """
+        tokens = tokenize_text(text)
+
+        if doc_id not in self.term_frequencies:
+            self.term_frequencies[doc_id] = Counter()
+
+        self.term_frequencies[doc_id].update(tokens)
+        self.doc_lengths[doc_id] = len(tokens)
+        for token in set(tokens):
+            self.index[token].add(doc_id)
+
+    def __get_avg_doc_length(self) -> float:
+        """ Docstring for __get_avg_doc_length """
+        return sum(self.doc_lengths.values()) / len(self.doc_lengths) if self.doc_lengths else 0.0
 
     def build(self) -> None:
         """ Docstring for build """
@@ -43,12 +62,15 @@ class InvertedIndex:
     def save(self) -> None:
         """ Docstring for save """
         os.makedirs(CACHE_DIR, exist_ok=True)
+
         with open(self.index_path, "wb") as f:
             pickle.dump(self.index, f)
         with open(self.docmap_path, "wb") as f:
             pickle.dump(self.docmap, f)
         with open(self.term_frequencies_path, "wb") as f:
             pickle.dump(self.term_frequencies, f)
+        with open(self.doc_lengths_path, "wb") as f:
+            pickle.dump(self.doc_lengths, f)
 
     def load(self) -> None:
         """ Docstring for load """
@@ -58,21 +80,13 @@ class InvertedIndex:
             self.docmap = pickle.load(f)
         with open(self.term_frequencies_path, "rb") as f:
             self.term_frequencies = pickle.load(f)
+        with open(self.doc_lengths_path, "rb") as f:
+            self.doc_lengths = pickle.load(f)
 
     def get_documents(self, term: str) -> list[int]:
         """ Docstring for get_documents """
         doc_ids = self.index.get(term, set())
         return sorted(list(doc_ids))
-
-    def __add_document(self, doc_id: int, text: str) -> None:
-        """ Docstring for __add_document """
-        tokens = tokenize_text(text)
-
-        if doc_id not in self.term_frequencies:
-            self.term_frequencies[doc_id] = Counter()
-        self.term_frequencies[doc_id].update(tokens)
-        for token in set(tokens):
-            self.index[token].add(doc_id)
 
     def get_tf(self, doc_id: int, term: str) -> int:
         """ Docstring for get_tf """
@@ -111,10 +125,16 @@ class InvertedIndex:
         return math.log((doc_count - term_doc_count + 0.5) /
                         (term_doc_count + 0.5) + 1)
 
-    def get_bm25_tf(self, doc_id, term, k1=BM25_K1):
+    def get_bm25_tf(self, doc_id, term, k1=BM25_K1, b=BM25_B):
         """ Docstring for get_bm25_tf """
+
         tf = self.get_tf(doc_id, term)
-        return (tf * (k1 + 1)) / (tf + k1)
+
+        avg_doc = self.__get_avg_doc_length()
+        length_norm = 1 - b + b * \
+            ((self.doc_lengths[doc_id] / avg_doc) if avg_doc > 0 else 0)
+
+        return (tf * (k1 + 1)) / (tf + k1 * length_norm)
 
 
 def preprocess_text(text: str) -> str:
@@ -157,7 +177,7 @@ def bm25_idf_command(term: str) -> float:
     return index.get_bm25_idf(term)
 
 
-def bm25_tf_command(doc_id: int, term: str, k1: float = BM25_K1):
+def bm25_tf_command(doc_id: int, term: str, k1: float = BM25_K1, b: float = BM25_B):
     """ Docstring for bm25_tf_command """
     index = InvertedIndex()
 
@@ -168,7 +188,7 @@ def bm25_tf_command(doc_id: int, term: str, k1: float = BM25_K1):
         return
 
     try:
-        bm25_tf = index.get_bm25_tf(doc_id, term, k1)
+        bm25_tf = index.get_bm25_tf(doc_id, term, k1, b)
         return bm25_tf
     except KeyError:
         print(f"Document ID {doc_id} not found.")

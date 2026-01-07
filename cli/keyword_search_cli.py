@@ -4,7 +4,7 @@ Docstring for cli.keyword_search_cli
 """
 import argparse
 
-from lib.search_utils import BM25_K1
+from lib.search_utils import BM25_K1, BM25_B
 from utils import read_stop_words, clean_words
 from inverted_index import InvertedIndex, bm25_idf_command, bm25_tf_command
 
@@ -21,7 +21,8 @@ def main() -> None:
         "search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
 
-    # build_parser = subparsers.add_parser("build", help="Build inverted index")
+    build_parser = subparsers.add_parser("build", help="Build inverted index")
+
     term_parser = subparsers.add_parser(
         "tf", help="Get term frequency in a document")
     term_parser.add_argument("doc_id", type=int, help="Document ID")
@@ -49,6 +50,8 @@ def main() -> None:
         "term", type=str, help="Term to get BM25 TF score for")
     bm25_tf_parser.add_argument(
         "k1", type=float, nargs='?', default=BM25_K1, help="Tunable BM25 K1 parameter")
+    bm25_tf_parser.add_argument(
+        "b", type=float, nargs='?', default=BM25_B, help="Tunable BM25 b parameter")
 
     args = parser.parse_args()
 
@@ -129,7 +132,7 @@ def main() -> None:
 
         case "bm25tf":
             bm25tf = bm25_tf_command(
-                args.doc_id, args.term, args.k1)
+                args.doc_id, args.term, args.k1, args.b)
             print(
                 f"BM25 TF score of '{args.term}' in document '{args.doc_id}': {bm25tf:.2f}")
 
