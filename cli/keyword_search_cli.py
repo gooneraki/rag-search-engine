@@ -16,12 +16,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
     subparsers = parser.add_subparsers(
         dest="command", help="Available commands")
+    subparsers.add_parser("build", help="Build inverted index")
 
     search_parser = subparsers.add_parser(
         "search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
-
-    build_parser = subparsers.add_parser("build", help="Build inverted index")
 
     term_parser = subparsers.add_parser(
         "tf", help="Get term frequency in a document")
