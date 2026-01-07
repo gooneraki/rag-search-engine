@@ -3,10 +3,9 @@
 Docstring for cli.keyword_search_cli
 """
 import argparse
-import math
 
 from utils import read_stop_words, clean_words
-from inverted_index import InvertedIndex, tokenize_text
+from inverted_index import InvertedIndex
 
 
 def main() -> None:
@@ -77,21 +76,7 @@ def main() -> None:
                 print(f"Error: {e}")
                 return
 
-            tokenized_term = tokenize_text(args.term)
-            if len(tokenized_term) > 1:
-                print("Error: Please provide a single term for IDF calculation.")
-                return
-            elif len(tokenized_term) == 0:
-                print(
-                    f"Error: No valid term provided after tokenization for '{args.term}'.")
-                return
-
-            term = tokenized_term[0]
-            doc_ids = index.get_documents(term)
-            total_doc_count = len(index.docmap)
-            term_match_doc_count = len(doc_ids)
-
-            idf = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+            idf = index.get_idf(args.term)
             print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
 
         case "tf":
@@ -117,22 +102,7 @@ def main() -> None:
                 print(f"Error: {e}")
                 return
 
-            try:
-                tf = index.get_tf(args.doc_id, args.term)
-            except KeyError:
-                print("term frequency is 0, so TF-IDF is 0")
-                tf = 0
-
-            try:
-                doc_ids = index.get_documents(args.term)
-                total_doc_count = len(index.docmap)
-                term_match_doc_count = len(doc_ids)
-                idf = math.log((total_doc_count + 1) /
-                               (term_match_doc_count + 1))
-            except KeyError:
-                idf = 0
-
-            tf_idf = tf * idf
+            tf_idf = index.get_tf_idf(args.doc_id, args.term)
 
             print(
                 f"TF-IDF score of '{args.term}' in document '{args.doc_id}': {tf_idf:.2f}")

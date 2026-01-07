@@ -4,6 +4,7 @@ Docstring for cli.inverted_index
 import os
 import pickle
 import string
+import math
 from collections import defaultdict, Counter
 
 from nltk.stem import PorterStemmer
@@ -72,14 +73,29 @@ class InvertedIndex:
         for token in set(tokens):
             self.index[token].add(doc_id)
 
-    def get_tf(self, doc_id, term):
+    def get_tf(self, doc_id: int, term: str) -> int:
         """ Docstring for get_tf """
-        tokenized_term = tokenize_text(term)
-        if len(tokenized_term) > 1:
-            raise ValueError("Term must be a single token")
-        elif len(tokenized_term) == 0:
-            return 0
-        return self.term_frequencies[doc_id][tokenized_term[0]]
+        tokens = tokenize_text(term)
+        if len(tokens) != 1:
+            raise ValueError("term must be a single token")
+        token = tokens[0]
+        return self.term_frequencies[doc_id][token]
+
+    def get_idf(self, term: str) -> float:
+        """ Docstring for get_idf """
+        tokens = tokenize_text(term)
+        if len(tokens) != 1:
+            raise ValueError("term must be a single token")
+        token = tokens[0]
+        doc_count = len(self.docmap)
+        term_doc_count = len(self.index[token])
+        return math.log((doc_count + 1) / (term_doc_count + 1))
+
+    def get_tf_idf(self, doc_id: int, term: str) -> float:
+        """ Docstring for get_tf_idf """
+        tf = self.get_tf(doc_id, term)
+        idf = self.get_idf(term)
+        return tf * idf
 
 
 def preprocess_text(text: str) -> str:
