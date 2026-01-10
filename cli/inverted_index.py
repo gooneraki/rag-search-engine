@@ -136,6 +136,24 @@ class InvertedIndex:
 
         return (tf * (k1 + 1)) / (tf + k1 * length_norm)
 
+    def bm25(self, doc_id, term):
+        """ Docstring for bm25 """
+        idf = self.get_bm25_idf(term)
+        tf = self.get_bm25_tf(doc_id, term)
+        return idf * tf
+
+    def bm25_search(self, query, limit):
+        """ Docstring for bm25_search """
+        tokens = tokenize_text(query)
+        scores = defaultdict(float)
+
+        for doc_id in self.docmap.keys():
+            for token in tokens:
+                scores[doc_id] += self.bm25(doc_id, token)
+
+        ranked_docs = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        return ranked_docs[:limit]
+
 
 def preprocess_text(text: str) -> str:
     """ Docstring for preprocess_text """
@@ -193,3 +211,27 @@ def bm25_tf_command(doc_id: int, term: str, k1: float = BM25_K1, b: float = BM25
     except KeyError:
         print(f"Document ID {doc_id} not found.")
         return 0.0
+
+
+def bm25_search_command(query, limit):
+    """ Docstring for bm25_tf_command """
+    index = InvertedIndex()
+
+    try:
+        index.load()
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return
+
+    try:
+        search_results = index.bm25_search(query, limit)
+        formatted_results = []
+        for i, result in enumerate(search_results, 1):
+            doc_id = result[0]
+            score = result[1]
+            title = index.docmap[doc_id]['title']
+            formatted_results.append(
+                f"{i}. ({doc_id}) {title} - Score: {score:.2f}")
+        return formatted_results
+    except Exception as err:
+        raise ValueError(f"Error in bm25search: {err}") from err

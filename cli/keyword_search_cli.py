@@ -4,9 +4,9 @@ Docstring for cli.keyword_search_cli
 """
 import argparse
 
-from lib.search_utils import BM25_K1, BM25_B
+from lib.search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 from utils import read_stop_words, clean_words
-from inverted_index import InvertedIndex, bm25_idf_command, bm25_tf_command
+from inverted_index import InvertedIndex, bm25_idf_command, bm25_tf_command, bm25_search_command
 
 
 def main() -> None:
@@ -52,6 +52,12 @@ def main() -> None:
     bm25_tf_parser.add_argument(
         "b", type=float, nargs='?', default=BM25_B, help="Tunable BM25 b parameter")
 
+    bm25search_parser = subparsers.add_parser(
+        "bm25search", help="Search movies using full BM25 scoring")
+    bm25search_parser.add_argument("query", type=str, help="Search query")
+    bm25search_parser.add_argument(
+        "limit", type=float, nargs='?', default=DEFAULT_SEARCH_LIMIT, help="Max number of results")
+
     args = parser.parse_args()
 
     match args.command:
@@ -73,7 +79,7 @@ def main() -> None:
                 doc_ids = index.get_documents(term)
                 result_ids.update(doc_ids)
 
-            results = sorted(list(result_ids))[:5]
+            results = sorted(list(result_ids))[:DEFAULT_SEARCH_LIMIT]
             for doc_id in results:
                 movie = index.docmap[doc_id]
                 print(f"{movie['title']} (ID: {doc_id})")
@@ -134,6 +140,11 @@ def main() -> None:
                 args.doc_id, args.term, args.k1, args.b)
             print(
                 f"BM25 TF score of '{args.term}' in document '{args.doc_id}': {bm25tf:.2f}")
+
+        case "bm25search":
+            results = bm25_search_command(args.query, args.limit)
+            for result in results:
+                print(result)
 
         case _:
             parser.print_help()
