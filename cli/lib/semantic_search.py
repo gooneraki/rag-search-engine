@@ -123,3 +123,15 @@ def cosine_similarity(vec1, vec2):
         return 0.0
 
     return dot_product / (norm1 * norm2)
+
+
+def chunk_text(text, chunk_size):
+    words = text.split()
+    chunks = []
+    for i in range(0, len(words), chunk_size):
+        chunk = ' '.join(words[i:i + chunk_size])
+        chunks.append(chunk)
+
+    print(f"Chunking {len(text)} characters")
+    for idx, chunk in enumerate(chunks, start=1):
+        print(f"{idx}. {chunk[:75]}{'...' if len(chunk) > 75 else ''}")
