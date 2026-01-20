@@ -125,12 +125,19 @@ def cosine_similarity(vec1, vec2):
     return dot_product / (norm1 * norm2)
 
 
-def chunk_text(text, chunk_size):
+def chunk_text(text, chunk_size, overlap):
     words = text.split()
     chunks = []
-    for i in range(0, len(words), chunk_size):
+
+    i = 0
+    while i < len(words):
         chunk = ' '.join(words[i:i + chunk_size])
         chunks.append(chunk)
+
+        if i + chunk_size >= len(words):
+            break
+
+        i += chunk_size - overlap
 
     print(f"Chunking {len(text)} characters")
     for idx, chunk in enumerate(chunks, start=1):
