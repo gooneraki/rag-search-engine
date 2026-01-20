@@ -1,5 +1,5 @@
 import os
-
+import re
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -141,4 +141,26 @@ def chunk_text(text, chunk_size, overlap):
 
     print(f"Chunking {len(text)} characters")
     for idx, chunk in enumerate(chunks, start=1):
-        print(f"{idx}. {chunk[:75]}{'...' if len(chunk) > 75 else ''}")
+        print(f"{idx}. {chunk}")
+
+
+def semantic_chunk_text(text, max_chunk_size, overlap):
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+
+    chunks = []
+    i = 0
+    while i < len(sentences):
+        chunk_sentences = sentences[i:i + max_chunk_size]
+        chunk = ' '.join(chunk_sentences)
+        chunks.append(chunk)
+
+        if i + max_chunk_size >= len(sentences):
+            break
+
+        i += max_chunk_size - overlap
+
+    print(f"Semantically chunking {len(text)} characters")
+    for idx, chunk in enumerate(chunks, start=1):
+        print(f"{idx}. {chunk}")
+
+    return chunks
