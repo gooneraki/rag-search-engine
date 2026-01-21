@@ -11,6 +11,8 @@ from lib.semantic_search import (
     semantic_chunk_text,
 )
 
+from lib.chunk_semantic_search import embed_text_chunks
+
 
 def main():
     """ Docstring for main """
@@ -57,6 +59,8 @@ def main():
     semantic_chunk_parser.add_argument('--overlap', type=int, nargs='?', default=0,
                                        help="Chunk overlap in sentences")
 
+    subparsers.add_parser('embed_chunks', help="Embed text chunks")
+
     args = parser.parse_args()
 
     match args.command:
@@ -81,6 +85,9 @@ def main():
         case 'semantic_chunk':
             semantic_chunk_text(args.text, int(
                 args.max_chunk_size), int(args.overlap))
+
+        case 'embed_chunks':
+            embed_text_chunks()
 
         case _:
             parser.print_help()
