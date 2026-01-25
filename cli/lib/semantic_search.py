@@ -1,3 +1,4 @@
+"""Semantic search module for document embedding and similarity search using sentence transformers."""
 import os
 import re
 import numpy as np
@@ -9,6 +10,8 @@ MOVIE_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "movie_embeddings.npy")
 
 
 class SemanticSearch:
+    """Semantic search engine using sentence transformers for document embedding and similarity."""
+
     def __init__(self, model_name="all-MiniLM-L6-v2"):
         self.model = SentenceTransformer(model_name)
         self.embeddings = None
@@ -49,7 +52,7 @@ class SemanticSearch:
 
     def search(self, query, limit=5):
         limit = max(0, int(limit))
-        if (self.embeddings is None):
+        if self.embeddings is None:
             raise ValueError(
                 "No embeddings loaded. Call `load_or_create_embeddings` first.")
         similarity_scores: list[tuple[float, dict]] = []

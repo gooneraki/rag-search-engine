@@ -1,4 +1,4 @@
-""" Docstring for cli.lib.search_utils """
+"""Utility functions and constants for search operations."""
 import json
 import os
 
@@ -15,13 +15,13 @@ BM25_B = 0.75
 
 
 def load_movies() -> list[dict]:
-    """ Docstring for load_movies """
+    """Load movie data from JSON file."""
     with open(DATA_PATH, "r") as f:
         data = json.load(f)
     return data["movies"]
 
 
 def load_stopwords() -> list[str]:
-    """ Docstring for load_stopwords """
+    """Load stopwords from text file."""
     with open(STOPWORDS_PATH, "r") as f:
         return f.read().splitlines()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Docstring for cli.semantic_search_cli """
+"""CLI for semantic search using sentence transformers."""
 import argparse
 from lib.semantic_search import (
     verify_model,
@@ -18,7 +18,7 @@ from lib.chunk_semantic_search import (
 
 
 def main():
-    """ Docstring for main """
+    """Entry point for semantic search CLI."""
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
 
     subparsers = parser.add_subparsers(

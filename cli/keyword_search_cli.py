@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Docstring for cli.keyword_search_cli
-"""
+"""CLI for keyword-based search using BM25 algorithm."""
 import argparse
 
 from lib.search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
@@ -10,9 +8,7 @@ from cli.lib.keyword_search_ import InvertedIndex, bm25_idf_command, bm25_tf_com
 
 
 def main() -> None:
-    """
-    Docstring for main
-    """
+    """Entry point for keyword search CLI."""
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
     subparsers = parser.add_subparsers(
         dest="command", help="Available commands")

@@ -15,9 +15,7 @@ SCORE_PRECISION = 4
 
 
 class ChunkedSemanticSearch(SemanticSearch):
-    """
-    Docstring for ChunkedSemanticSearch
-    """
+    """Semantic search with document chunking for improved similarity matching."""
 
     def __init__(self, model_name="all-MiniLM-L6-v2") -> None:
         super().__init__(model_name)
