@@ -144,17 +144,34 @@ def chunk_text(text, chunk_size, overlap):
         print(f"{idx}. {chunk}")
 
 
-def semantic_chunk_text(text, max_chunk_size, overlap):
+def semantic_chunk_text(text: str, max_chunk_size, overlap):
+    text = text.strip()
+    if not text:
+        return []
+
     sentences = re.split(r"(?<=[.!?])\s+", text)
+
+    if len(sentences) == 1 and not re.search(r"[.!?]$", text):
+        sentences = [text]
+
+    cleaned_sentences = []
+    for sentence in sentences:
+        cleaned_sentence = sentence.strip()
+        if cleaned_sentence:
+            cleaned_sentences.append(cleaned_sentence)
+
+    if not cleaned_sentences:
+        return []
 
     chunks = []
     i = 0
-    while i < len(sentences):
-        chunk_sentences = sentences[i:i + max_chunk_size]
-        chunk = ' '.join(chunk_sentences)
-        chunks.append(chunk)
+    while i < len(cleaned_sentences):
+        chunk_sentences = cleaned_sentences[i:i + max_chunk_size]
+        chunk = ' '.join(chunk_sentences).strip()
+        if chunk:
+            chunks.append(chunk)
 
-        if i + max_chunk_size >= len(sentences):
+        if i + max_chunk_size >= len(cleaned_sentences):
             break
 
         i += max_chunk_size - overlap
