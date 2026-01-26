@@ -1,3 +1,5 @@
+"""CLI for hybrid search combining BM25 and semantic search."""
+
 import argparse
 
 

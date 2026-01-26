@@ -1,3 +1,5 @@
+"""Hybrid search module combining BM25 and semantic search."""
+
 import os
 
 from .keyword_search import InvertedIndex
@@ -5,6 +7,8 @@ from .semantic_search import ChunkedSemanticSearch
 
 
 class HybridSearch:
+    """Hybrid search combining BM25 keyword search with semantic search."""
+
     def __init__(self, documents):
         self.documents = documents
         self.semantic_search = ChunkedSemanticSearch()
