@@ -4,7 +4,7 @@ import argparse
 
 from lib.search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 from lib.utils import read_stop_words, clean_words
-from lib.keyword_search_ import InvertedIndex, bm25_idf_command, bm25_tf_command, bm25_search_command
+from lib.keyword_search import InvertedIndex, bm25_idf_command, bm25_tf_command, bm25_search_command
 
 
 def main() -> None:
