@@ -1,4 +1,4 @@
-"""Semantic search module for document embedding and similarity search using sentence transformers."""
+"""Semantic search module for document embedding and similarity search."""
 import os
 import re
 import numpy as np

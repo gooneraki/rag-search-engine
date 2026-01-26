@@ -3,12 +3,12 @@
 import argparse
 
 from lib.search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
-from cli.lib.utils import read_stop_words, clean_words
-from cli.lib.keyword_search_ import InvertedIndex, bm25_idf_command, bm25_tf_command, bm25_search_command
+from lib.utils import read_stop_words, clean_words
+from lib.keyword_search_ import InvertedIndex, bm25_idf_command, bm25_tf_command, bm25_search_command
 
 
 def main() -> None:
-    """Entry point for keyword search CLI."""
+    """Entry point for keyword search """
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
     subparsers = parser.add_subparsers(
         dest="command", help="Available commands")

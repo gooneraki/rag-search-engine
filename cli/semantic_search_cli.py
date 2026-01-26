@@ -18,7 +18,7 @@ from lib.chunk_semantic_search import (
 
 
 def main():
-    """Entry point for semantic search CLI."""
+    """Entry point for semantic search """
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
 
     subparsers = parser.add_subparsers(
