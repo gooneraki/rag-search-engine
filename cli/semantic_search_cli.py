@@ -11,7 +11,7 @@ from lib.semantic_search import (
     semantic_chunk_text
 )
 
-from lib.chunk_semantic_search import (
+from lib.semantic_search import (
     embed_text_chunks,
     search_chunked_command
 )
