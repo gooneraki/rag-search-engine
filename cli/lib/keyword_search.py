@@ -138,7 +138,7 @@ class InvertedIndex:
         tf = self.get_bm25_tf(doc_id, term)
         return idf * tf
 
-    def bm25_search(self, query, limit):
+    def bm25_search(self, query, limit) -> list[tuple[int, float]]:
         """Search documents using BM25 ranking."""
         tokens = tokenize_text(query)
         scores = defaultdict(float)

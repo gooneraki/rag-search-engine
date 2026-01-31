@@ -24,9 +24,33 @@ def main() -> None:
     weighted_search_parser.add_argument(
         "--limit", type=int, help="Number of results to return", default=5, nargs="?")
 
+    rrf_search_parser = subparsers.add_parser(
+        "rrf-search", help="Perform RRF hybrid search")
+    rrf_search_parser.add_argument(
+        "query", type=str, help="Search query")
+    rrf_search_parser.add_argument(
+        "--limit", type=int, help="Number of results to return", default=5, nargs="?")
+    rrf_search_parser.add_argument(
+        "-k", type=int, help="RRF k parameter", default=60, nargs="?")
+
     args = parser.parse_args()
 
     match args.command:
+        case 'rrf-search':
+            documents = load_movies()
+            hybrid_search = HybridSearch(documents)
+            results = hybrid_search.rrf_search(
+                args.query, args.k, args.limit)
+
+            for idx, res in enumerate(results, start=1):
+                print(f"{idx}. {res['title']}")
+                print(f"   RRF Score: {res['rrf_score']:.3f}")
+                print(
+                    f"   BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
+                desc = res['description']
+                suffix = "..." if len(desc) > 100 else ""
+                print(f"   {desc[:100]}{suffix}")
+
         case 'weighted-search':
             documents = load_movies()
             hybrid_search = HybridSearch(documents)
