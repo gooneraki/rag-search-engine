@@ -15,3 +15,6 @@ data/
 # Project specific
 cache/
 .pylintrc
+
+# Environment variables
+.env
