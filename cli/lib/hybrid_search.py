@@ -83,7 +83,7 @@ class HybridSearch:
         results.sort(key=lambda x: x['hybrid_score'], reverse=True)
         return results[:limit]
 
-    def rrf_search(self, query, k, limit=10):
+    def rrf_search(self, query, k, limit):
 
         # Get BM25 and semantic results (500x the limit for better coverage)
         bm25_results = self._bm25_search(query, 500 * limit)

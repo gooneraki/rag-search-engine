@@ -2,8 +2,12 @@
 
 import argparse
 from lib.hybrid_search import HybridSearch, normalize_scores
-from lib.search_utils import load_movies
-from lib.genai import GenAIClient, prompt_for_typo, optimized_query
+from lib.search_utils import load_movies, DEFAULT_SEARCH_LIMIT
+from lib.genai import (
+    GenAIClient,
+    prompt_spell,
+    prompt_rewrite,
+    prompt_expand)
 
 
 def main() -> None:
@@ -23,18 +27,21 @@ def main() -> None:
     weighted_search_parser.add_argument(
         "--alpha", type=float, help="Weight for BM25 search", default=0.5, nargs="?")
     weighted_search_parser.add_argument(
-        "--limit", type=int, help="Number of results to return", default=5, nargs="?")
+        "--limit", type=int, help="Number of results to return",
+        default=DEFAULT_SEARCH_LIMIT, nargs="?")
 
     rrf_search_parser = subparsers.add_parser(
         "rrf-search", help="Perform RRF hybrid search")
     rrf_search_parser.add_argument(
         "query", type=str, help="Search query")
-    rrf_search_parser.add_argument(
-        "--limit", type=int, help="Number of results to return", default=5, nargs="?")
+    rrf_search_parser.add_argument("--limit", type=int, nargs="?",
+                                   help="Number of results to return",
+                                   default=DEFAULT_SEARCH_LIMIT)
     rrf_search_parser.add_argument(
         "-k", type=int, help="RRF k parameter", default=60, nargs="?")
     rrf_search_parser.add_argument(
-        "--enhance", type=str,  choices=["spell", "rewrite"], help="Query enhancement method")
+        "--enhance", type=str,  choices=["spell", "rewrite", "expand"],
+        help="Query enhancement method")
 
     args = parser.parse_args()
 
@@ -44,10 +51,15 @@ def main() -> None:
             if args.enhance is not None:
                 genai_client = GenAIClient()
                 if args.enhance == "rewrite":
-                    typo_prompt = optimized_query(args.query)
+                    prompt = prompt_rewrite(args.query)
+                elif args.enhance == "spell":
+                    prompt = prompt_spell(args.query)
+                elif args.enhance == "expand":
+                    prompt = prompt_expand(args.query)
                 else:
-                    typo_prompt = prompt_for_typo(args.query)
-                query = genai_client.generate_response(typo_prompt)
+                    print("Enhance method not recognized.")
+                    return
+                query = genai_client.generate_response(prompt)
 
                 print(
                     f"Enhanced query ({args.enhance}): '{args.query}' -> '{query}'\n")
