@@ -3,7 +3,7 @@
 import argparse
 from lib.hybrid_search import HybridSearch, normalize_scores
 from lib.search_utils import load_movies
-from lib.genai import GenAIClient, prompt_for_typo
+from lib.genai import GenAIClient, prompt_for_typo, optimized_query
 
 
 def main() -> None:
@@ -34,16 +34,19 @@ def main() -> None:
     rrf_search_parser.add_argument(
         "-k", type=int, help="RRF k parameter", default=60, nargs="?")
     rrf_search_parser.add_argument(
-        "--enhance", type=str,  choices=["spell"], help="Query enhancement method")
+        "--enhance", type=str,  choices=["spell", "rewrite"], help="Query enhancement method")
 
     args = parser.parse_args()
 
     match args.command:
         case 'rrf-search':
             query = args.query
-            if args.enhance == "spell":
+            if args.enhance is not None:
                 genai_client = GenAIClient()
-                typo_prompt = prompt_for_typo(args.query)
+                if args.enhance == "rewrite":
+                    typo_prompt = optimized_query(args.query)
+                else:
+                    typo_prompt = prompt_for_typo(args.query)
                 query = genai_client.generate_response(typo_prompt)
 
                 print(
