@@ -7,7 +7,8 @@ from lib.genai import (
     GenAIClient,
     prompt_spell,
     prompt_rewrite,
-    prompt_expand)
+    prompt_expand,
+    rate_movie_match)
 
 
 def main() -> None:
@@ -42,14 +43,21 @@ def main() -> None:
     rrf_search_parser.add_argument(
         "--enhance", type=str,  choices=["spell", "rewrite", "expand"],
         help="Query enhancement method")
+    rrf_search_parser.add_argument(
+        "--rerank-method", nargs="?", type=str,  choices=["individual"],
+        help="Reranking method to apply after initial search")
 
     args = parser.parse_args()
 
     match args.command:
         case 'rrf-search':
             query = args.query
-            if args.enhance is not None:
+            genai_client = None
+
+            if args.enhance is not None or args.rerank_method == "individual":
                 genai_client = GenAIClient()
+
+            if args.enhance is not None:
                 if args.enhance == "rewrite":
                     prompt = prompt_rewrite(args.query)
                 elif args.enhance == "spell":
@@ -66,10 +74,25 @@ def main() -> None:
 
             documents = load_movies()
             hybrid_search = HybridSearch(documents)
-            results = hybrid_search.rrf_search(query, args.k, args.limit)
+
+            results = hybrid_search.rrf_search(
+                query,
+                args.k,
+                args.limit * 5 if args.rerank_method == "individual" else args.limit)
+
+            if args.rerank_method == "individual":
+                for idx, res in enumerate(results):
+                    score_prompt = rate_movie_match(query, res)
+                    rating = genai_client.generate_response(score_prompt)
+                    res['rerank_score'] = float(rating.strip())
+
+                results.sort(key=lambda x: x['rerank_score'], reverse=True)
+                results = results[:args.limit]
 
             for idx, res in enumerate(results, start=1):
                 print(f"{idx}. {res['title']}")
+                if args.rerank_method == "individual":
+                    print(f"   Rerank Score: {res['rerank_score']:.3f}")
                 print(f"   RRF Score: {res['rrf_score']:.3f}")
                 print(
                     f"   BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
