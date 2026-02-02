@@ -79,7 +79,7 @@ def rate_movie_match(query: str, doc: dict) -> str:
     return f"""Rate how well this movie matches the search query.
 
 Query: "{query}"
-Movie: {doc.get("title", "")} - {doc.get("document", "")}
+Movie: {doc["title"]} - {doc["description"]}
 
 Consider:
 - Direct relevance to query

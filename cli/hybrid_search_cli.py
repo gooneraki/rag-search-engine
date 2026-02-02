@@ -84,7 +84,8 @@ def main() -> None:
                 for idx, res in enumerate(results):
                     score_prompt = rate_movie_match(query, res)
                     rating = genai_client.generate_response(score_prompt)
-                    res['rerank_score'] = float(rating.strip())
+                    res['rerank_score'] = float(
+                        rating.strip() if rating else 0.0)
 
                 results.sort(key=lambda x: x['rerank_score'], reverse=True)
                 results = results[:args.limit]
