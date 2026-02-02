@@ -90,3 +90,17 @@ Rate 0-10 (10 = perfect match).
 Give me ONLY the number in your response, no other text or explanation.
 
 Score:"""
+
+
+def rate_movie_batch(query: str, doc_list_str: str) -> str:
+    return f"""Rank these movies by relevance to the search query.
+
+Query: "{query}"
+
+Movies:
+{doc_list_str}
+
+Return ONLY the IDs in order of relevance (best match first). Return a valid JSON list, nothing else. For example:
+
+[75, 12, 34, 2, 1]
+"""

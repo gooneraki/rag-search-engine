@@ -1,6 +1,7 @@
 """CLI for hybrid search combining BM25 and semantic search."""
 
 import argparse
+import json
 from lib.hybrid_search import HybridSearch, normalize_scores
 from lib.search_utils import load_movies, DEFAULT_SEARCH_LIMIT
 from lib.genai import (
@@ -8,7 +9,8 @@ from lib.genai import (
     prompt_spell,
     prompt_rewrite,
     prompt_expand,
-    rate_movie_match)
+    rate_movie_match,
+    rate_movie_batch)
 
 
 def main() -> None:
@@ -44,7 +46,7 @@ def main() -> None:
         "--enhance", type=str,  choices=["spell", "rewrite", "expand"],
         help="Query enhancement method")
     rrf_search_parser.add_argument(
-        "--rerank-method", nargs="?", type=str,  choices=["individual"],
+        "--rerank-method", nargs="?", type=str,  choices=["individual", "batch"],
         help="Reranking method to apply after initial search")
 
     args = parser.parse_args()
@@ -54,7 +56,7 @@ def main() -> None:
             query = args.query
             genai_client = None
 
-            if args.enhance is not None or args.rerank_method == "individual":
+            if args.enhance is not None or args.rerank_method is not None:
                 genai_client = GenAIClient()
 
             if args.enhance is not None:
@@ -78,7 +80,7 @@ def main() -> None:
             results = hybrid_search.rrf_search(
                 query,
                 args.k,
-                args.limit * 5 if args.rerank_method == "individual" else args.limit)
+                args.limit * 5 if args.rerank_method else args.limit)
 
             if args.rerank_method == "individual":
                 for idx, res in enumerate(results):
@@ -90,10 +92,35 @@ def main() -> None:
                 results.sort(key=lambda x: x['rerank_score'], reverse=True)
                 results = results[:args.limit]
 
+            if args.rerank_method == "batch":
+
+                doc_list_str = "\n".join(
+                    [f"ID: {res['id']} - Title: {res['title']} - Description: {res['description']}" for res in results])
+                rerank_response = genai_client.generate_response(
+                    rate_movie_batch(query, doc_list_str))
+
+                # Parse the JSON response
+                ranked_ids = json.loads(rerank_response.strip())
+
+                # Create a mapping from document ID to result
+                id_to_result = {res['id']: res for res in results}
+
+                # Assign rerank ranks based on the order in ranked_ids
+                for idx, doc_id in enumerate(ranked_ids):
+                    if doc_id in id_to_result:
+                        id_to_result[doc_id]['rerank_rank'] = idx + 1
+
+                # Sort by rerank_rank and limit results
+                results = [id_to_result[doc_id]
+                           for doc_id in ranked_ids if doc_id in id_to_result]
+                results = results[:args.limit]
+
             for idx, res in enumerate(results, start=1):
                 print(f"{idx}. {res['title']}")
                 if args.rerank_method == "individual":
                     print(f"   Rerank Score: {res['rerank_score']:.3f}")
+                elif args.rerank_method == "batch":
+                    print(f"   Rerank Rank: {res['rerank_rank']}")
                 print(f"   RRF Score: {res['rrf_score']:.3f}")
                 print(
                     f"   BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
