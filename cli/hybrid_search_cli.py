@@ -96,7 +96,8 @@ def main() -> None:
             if args.rerank_method == "batch":
 
                 doc_list_str = "\n".join(
-                    [f"ID: {res['id']} - Title: {res['title']} - Description: {res['description']}" for res in results])
+                    [f"ID: {res['id']} - Title: {res['title']} - Description: {res['description']}"
+                     for res in results])
                 rerank_response = genai_client.generate_response(
                     rate_movie_batch(query, doc_list_str))
 

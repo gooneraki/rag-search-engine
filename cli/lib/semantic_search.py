@@ -212,7 +212,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         chunk_strings = []
         chunk_metadata = []
         for doc in documents:
-            if (len(doc['description'].strip()) == 0):
+            if len(doc['description'].strip()) == 0:
                 continue
             chunks = semantic_chunk_text(doc['description'], 4, 1)
             for i, chunk in enumerate(chunks):
@@ -230,7 +230,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         os.makedirs(os.path.dirname(CHUNK_EMBEDDINGS_PATH), exist_ok=True)
         np.save(CHUNK_EMBEDDINGS_PATH, self.chunk_embeddings)
 
-        with open(CHUNK_METADATA_PATH, 'w') as f:
+        with open(CHUNK_METADATA_PATH, 'w', encoding='utf-8') as f:
             json.dump({"chunks": chunk_metadata, "total_chunks": len(
                 chunk_metadata)}, f, indent=2)
 
@@ -244,7 +244,7 @@ class ChunkedSemanticSearch(SemanticSearch):
 
         if os.path.exists(CHUNK_EMBEDDINGS_PATH) and os.path.exists(CHUNK_METADATA_PATH):
             self.chunk_embeddings = np.load(CHUNK_EMBEDDINGS_PATH)
-            with open(CHUNK_METADATA_PATH, 'r') as f:
+            with open(CHUNK_METADATA_PATH, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 if len(self.chunk_embeddings) == data["total_chunks"]:
                     self.chunk_metadata = data["chunks"]
