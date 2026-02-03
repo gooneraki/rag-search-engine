@@ -2,6 +2,7 @@
 
 import argparse
 import json
+from sentence_transformers import CrossEncoder
 from lib.hybrid_search import HybridSearch, normalize_scores
 from lib.search_utils import load_movies, DEFAULT_SEARCH_LIMIT
 from lib.genai import (
@@ -46,7 +47,7 @@ def main() -> None:
         "--enhance", type=str,  choices=["spell", "rewrite", "expand"],
         help="Query enhancement method")
     rrf_search_parser.add_argument(
-        "--rerank-method", nargs="?", type=str,  choices=["individual", "batch"],
+        "--rerank-method", nargs="?", type=str,  choices=["individual", "batch", "cross_encoder"],
         help="Reranking method to apply after initial search")
 
     args = parser.parse_args()
@@ -56,7 +57,7 @@ def main() -> None:
             query = args.query
             genai_client = None
 
-            if args.enhance is not None or args.rerank_method is not None:
+            if args.enhance is not None or (args.rerank_method is not None and args.rerank_method != "cross_encoder"):
                 genai_client = GenAIClient()
 
             if args.enhance is not None:
@@ -115,12 +116,31 @@ def main() -> None:
                            for doc_id in ranked_ids if doc_id in id_to_result]
                 results = results[:args.limit]
 
+            if args.rerank_method == "cross_encoder":
+                cross_encoder = CrossEncoder(
+                    "cross-encoder/ms-marco-TinyBERT-L2-v2")
+                pairs = []
+                for doc in results:
+                    pairs.append(
+                        [query, f"{doc['title']} - {doc['description']}"])
+                scores = cross_encoder.predict(pairs)
+
+                for idx, doc in enumerate(results):
+                    doc['cross_encoder_score'] = scores[idx]
+
+                results.sort(
+                    key=lambda x: x['cross_encoder_score'], reverse=True)
+                results = results[:args.limit]
+
             for idx, res in enumerate(results, start=1):
                 print(f"{idx}. {res['title']}")
                 if args.rerank_method == "individual":
                     print(f"   Rerank Score: {res['rerank_score']:.3f}")
                 elif args.rerank_method == "batch":
                     print(f"   Rerank Rank: {res['rerank_rank']}")
+                elif args.rerank_method == "cross_encoder":
+                    print(
+                        f"   Cross-Encoder Score: {res['cross_encoder_score']:.3f}")
                 print(f"   RRF Score: {res['rrf_score']:.3f}")
                 print(
                     f"   BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
