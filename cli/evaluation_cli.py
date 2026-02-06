@@ -30,10 +30,13 @@ def main():
         matches = [title for title in result_titles if title in relevant_docs]
 
         precision = len(matches)/len(results) if len(results) > 0 else 0
+        recall = len(matches) / \
+            len(relevant_docs) if len(relevant_docs) > 0 else 0
 
         print("")
         print(f"- Query: {query}")
         print(f"    - Precision@{limit}: {precision:.4f}")
+        print(f"    - Recall@{limit}: {recall:.4f}")
         print(f"    - Retrieved: {', '.join(result_titles)}")
         print(f"    - Relevant: {', '.join(relevant_docs)}")
 
