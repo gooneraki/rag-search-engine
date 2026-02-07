@@ -33,10 +33,14 @@ def main():
         recall = len(matches) / \
             len(relevant_docs) if len(relevant_docs) > 0 else 0
 
+        f_1_score = 2 * (precision * recall) / \
+            (precision + recall) if (precision + recall) > 0 else 0
+
         print("")
         print(f"- Query: {query}")
         print(f"    - Precision@{limit}: {precision:.4f}")
         print(f"    - Recall@{limit}: {recall:.4f}")
+        print(f"    - F1 Score: {f_1_score:.4f}")
         print(f"    - Retrieved: {', '.join(result_titles)}")
         print(f"    - Relevant: {', '.join(relevant_docs)}")
 
