@@ -49,6 +49,8 @@ def main() -> None:
     rrf_search_parser.add_argument(
         "--rerank-method", nargs="?", type=str,  choices=["individual", "batch", "cross_encoder"],
         help="Reranking method to apply after initial search")
+    rrf_search_parser.add_argument(
+        "--debug", action="store_true", help="Enable debug logging")
 
     args = parser.parse_args()
 
@@ -56,6 +58,11 @@ def main() -> None:
         case 'rrf-search':
             query = args.query
             genai_client = None
+            debug = args.debug
+
+            if debug:
+                print(f"\n[DEBUG] ========== RRF SEARCH ==========")
+                print(f"[DEBUG] Original Query: '{query}'")
 
             if args.enhance is not None or (args.rerank_method is not None and args.rerank_method != "cross_encoder"):
                 genai_client = GenAIClient()
@@ -72,8 +79,9 @@ def main() -> None:
                     return
                 query = genai_client.generate_response(prompt)
 
-                print(
-                    f"Enhanced query ({args.enhance}): '{args.query}' -> '{query}'\n")
+                if debug:
+                    print(
+                        f"[DEBUG] Enhanced query ({args.enhance}): '{args.query}' -> '{query}'\n")
 
             documents = load_movies()
             hybrid_search = HybridSearch(documents)
@@ -81,8 +89,11 @@ def main() -> None:
             results = hybrid_search.rrf_search(
                 query,
                 args.k,
-                args.limit * 5 if args.rerank_method else args.limit)
+                args.limit * 5 if args.rerank_method else args.limit,
+                debug=debug)
 
+            if debug:
+                print(f"\n[DEBUG] ========== RERANKING STAGE ==========")
             if args.rerank_method == "individual":
                 for idx, res in enumerate(results):
                     score_prompt = rate_movie_match(query, res)
@@ -92,6 +103,12 @@ def main() -> None:
 
                 results.sort(key=lambda x: x['rerank_score'], reverse=True)
                 results = results[:args.limit]
+
+                if debug:
+                    print(f"[DEBUG] Individual Rerank Results (top 5):")
+                    for idx, res in enumerate(results[:5], 1):
+                        print(
+                            f"  {idx}. {res['title']}, Rerank Score: {res['rerank_score']:.3f}")
 
             if args.rerank_method == "batch":
 
@@ -117,6 +134,12 @@ def main() -> None:
                            for doc_id in ranked_ids if doc_id in id_to_result]
                 results = results[:args.limit]
 
+                if debug:
+                    print(f"[DEBUG] Batch Rerank Results (top 5):")
+                    for idx, res in enumerate(results[:5], 1):
+                        print(
+                            f"  {idx}. {res['title']}, Rerank Rank: {res['rerank_rank']}")
+
             if args.rerank_method == "cross_encoder":
                 cross_encoder = CrossEncoder(
                     "cross-encoder/ms-marco-TinyBERT-L2-v2")
@@ -131,7 +154,21 @@ def main() -> None:
 
                 results.sort(
                     key=lambda x: x['cross_encoder_score'], reverse=True)
+
+                if debug:
+                    print(
+                        f"[DEBUG] Cross-Encoder Scores (all {len(results)} results):")
+                    for idx, res in enumerate(results, 1):
+                        print(
+                            f"  {idx}. {res['title']}, Score: {res['cross_encoder_score']:.3f}")
+
                 results = results[:args.limit]
+
+                if debug:
+                    print(f"\n[DEBUG] Cross-Encoder Rerank Results (top 5):")
+                    for idx, res in enumerate(results[:5], 1):
+                        print(
+                            f"  {idx}. {res['title']}, Cross-Encoder Score: {res['cross_encoder_score']:.3f}")
 
             for idx, res in enumerate(results, start=1):
                 print(f"{idx}. {res['title']}")

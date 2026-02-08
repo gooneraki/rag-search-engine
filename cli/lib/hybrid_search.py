@@ -1,7 +1,6 @@
 """Hybrid search module combining BM25 and semantic search."""
 
 import os
-
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 
@@ -83,11 +82,30 @@ class HybridSearch:
         results.sort(key=lambda x: x['hybrid_score'], reverse=True)
         return results[:limit]
 
-    def rrf_search(self, query, k, limit):
+    def rrf_search(self, query, k, limit, debug=False):
+
+        if debug:
+            print("\n[DEBUG] ========== RRF SEARCH PIPELINE ==========")
+            print(f"[DEBUG] Original Query: '{query}'")
+            print(f"[DEBUG] K parameter: {k}, Limit: {limit}")
 
         # Get BM25 and semantic results (500x the limit for better coverage)
         bm25_results = self._bm25_search(query, 500 * limit)
         sem_results = self.semantic_search.search_chunks(query, 500 * limit)
+
+        if debug:
+            print("\n[DEBUG] BM25 Search Results (top 5):")
+            for idx, (doc_id, score) in enumerate(bm25_results[:5], 1):
+                print(
+                    f"  {idx}. Doc ID: {doc_id}, Title: {self.idx.docmap[doc_id]['title']}, Score: {score:.4f}")
+            print(f"[DEBUG] BM25 Total Results: {len(bm25_results)}")
+
+            print("\n[DEBUG] Semantic Search Results (top 5):")
+            for idx, res in enumerate(sem_results[:5], 1):
+                doc = self.semantic_search.document_map[res['id']]
+                print(
+                    f"  {idx}. Doc ID: {res['id']}, Title: {doc['title']}, Score: {res['score']:.4f}")
+            print(f"[DEBUG] Semantic Total Results: {len(sem_results)}")
 
         combined_info: dict[int, dict] = {}
 
@@ -129,6 +147,15 @@ class HybridSearch:
                 'rrf_score': rrf_sc
             })
         results.sort(key=lambda x: x['rrf_score'], reverse=True)
+
+        if debug:
+            print("\n[DEBUG] RRF Combined Results (top 10):")
+            for idx, res in enumerate(results[:10], 1):
+                print(f"  {idx}. {res['title']}")
+                print(
+                    f"     RRF Score: {res['rrf_score']:.6f}, BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
+            print(f"[DEBUG] Total RRF Results Before Limit: {len(results)}")
+
         return results[:limit]
 
 
