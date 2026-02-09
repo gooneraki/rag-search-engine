@@ -11,7 +11,8 @@ from lib.genai import (
     prompt_rewrite,
     prompt_expand,
     rate_movie_match,
-    rate_movie_batch)
+    rate_movie_batch,
+    evaluate_results)
 
 
 def main() -> None:
@@ -51,6 +52,8 @@ def main() -> None:
         help="Reranking method to apply after initial search")
     rrf_search_parser.add_argument(
         "--debug", action="store_true", help="Enable debug logging")
+    rrf_search_parser.add_argument(
+        "--evaluate", action="store_true", help="Evaluate search results with LLM")
 
     args = parser.parse_args()
 
@@ -64,7 +67,7 @@ def main() -> None:
                 print(f"\n[DEBUG] ========== RRF SEARCH ==========")
                 print(f"[DEBUG] Original Query: '{query}'")
 
-            if args.enhance is not None or (args.rerank_method is not None and args.rerank_method != "cross_encoder"):
+            if args.enhance is not None or args.evaluate or (args.rerank_method is not None and args.rerank_method != "cross_encoder"):
                 genai_client = GenAIClient()
 
             if args.enhance is not None:
@@ -169,22 +172,32 @@ def main() -> None:
                     for idx, res in enumerate(results[:5], 1):
                         print(
                             f"  {idx}. {res['title']}, Cross-Encoder Score: {res['cross_encoder_score']:.3f}")
-
+            # Evaluate results if flag is set
+            evaluation_scores = None
+            if args.evaluate:
+                formatted_results: list[str] = [
+                    res['title'] for res in results]
+                evaluation_prompt = evaluate_results(query, formatted_results)
+                evaluation_response = genai_client.generate_response(
+                    evaluation_prompt)
+                evaluation_scores = json.loads(evaluation_response.strip())
             for idx, res in enumerate(results, start=1):
-                print(f"{idx}. {res['title']}")
-                if args.rerank_method == "individual":
-                    print(f"   Rerank Score: {res['rerank_score']:.3f}")
-                elif args.rerank_method == "batch":
-                    print(f"   Rerank Rank: {res['rerank_rank']}")
-                elif args.rerank_method == "cross_encoder":
+                title_with_score = f"{res['title']}: {evaluation_scores[idx-1]}/3" if evaluation_scores else res['title']
+                print(f"{idx}. {title_with_score}")
+                if not evaluation_scores:
+                    if args.rerank_method == "individual":
+                        print(f"   Rerank Score: {res['rerank_score']:.3f}")
+                    elif args.rerank_method == "batch":
+                        print(f"   Rerank Rank: {res['rerank_rank']}")
+                    elif args.rerank_method == "cross_encoder":
+                        print(
+                            f"   Cross-Encoder Score: {res['cross_encoder_score']:.3f}")
+                    print(f"   RRF Score: {res['rrf_score']:.3f}")
                     print(
-                        f"   Cross-Encoder Score: {res['cross_encoder_score']:.3f}")
-                print(f"   RRF Score: {res['rrf_score']:.3f}")
-                print(
-                    f"   BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
-                desc = res['description']
-                suffix = "..." if len(desc) > 100 else ""
-                print(f"   {desc[:100]}{suffix}")
+                        f"   BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
+                    desc = res['description']
+                    suffix = "..." if len(desc) > 100 else ""
+                    print(f"   {desc[:100]}{suffix}")
 
         case 'weighted-search':
             documents = load_movies()
