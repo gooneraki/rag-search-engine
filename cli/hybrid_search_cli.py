@@ -4,7 +4,7 @@ import argparse
 import json
 from sentence_transformers import CrossEncoder
 from lib.hybrid_search import HybridSearch, normalize_scores
-from lib.search_utils import load_movies, DEFAULT_SEARCH_LIMIT
+from lib.search_utils import load_movies, DEFAULT_SEARCH_LIMIT, DEFAULT_K_PARAMETER
 from lib.genai import (
     GenAIClient,
     prompt_spell,
@@ -43,7 +43,7 @@ def main() -> None:
                                    help="Number of results to return",
                                    default=DEFAULT_SEARCH_LIMIT)
     rrf_search_parser.add_argument(
-        "-k", type=int, help="RRF k parameter", default=60, nargs="?")
+        "-k", type=int, help="RRF k parameter", default=DEFAULT_K_PARAMETER, nargs="?")
     rrf_search_parser.add_argument(
         "--enhance", type=str,  choices=["spell", "rewrite", "expand"],
         help="Query enhancement method")
