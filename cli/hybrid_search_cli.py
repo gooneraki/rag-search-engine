@@ -64,10 +64,11 @@ def main() -> None:
             debug = args.debug
 
             if debug:
-                print(f"\n[DEBUG] ========== RRF SEARCH ==========")
+                print("\n[DEBUG] ========== RRF SEARCH ==========")
                 print(f"[DEBUG] Original Query: '{query}'")
 
-            if args.enhance is not None or args.evaluate or (args.rerank_method is not None and args.rerank_method != "cross_encoder"):
+            if args.enhance is not None or args.evaluate or \
+                    (args.rerank_method is not None and args.rerank_method != "cross_encoder"):
                 genai_client = GenAIClient()
 
             if args.enhance is not None:
@@ -96,7 +97,7 @@ def main() -> None:
                 debug=debug)
 
             if debug:
-                print(f"\n[DEBUG] ========== RERANKING STAGE ==========")
+                print("\n[DEBUG] ========== RERANKING STAGE ==========")
             if args.rerank_method == "individual":
                 for idx, res in enumerate(results):
                     score_prompt = rate_movie_match(query, res)
@@ -108,7 +109,7 @@ def main() -> None:
                 results = results[:args.limit]
 
                 if debug:
-                    print(f"[DEBUG] Individual Rerank Results (top 5):")
+                    print("[DEBUG] Individual Rerank Results (top 5):")
                     for idx, res in enumerate(results[:5], 1):
                         print(
                             f"  {idx}. {res['title']}, Rerank Score: {res['rerank_score']:.3f}")
@@ -138,7 +139,7 @@ def main() -> None:
                 results = results[:args.limit]
 
                 if debug:
-                    print(f"[DEBUG] Batch Rerank Results (top 5):")
+                    print("[DEBUG] Batch Rerank Results (top 5):")
                     for idx, res in enumerate(results[:5], 1):
                         print(
                             f"  {idx}. {res['title']}, Rerank Rank: {res['rerank_rank']}")
@@ -168,7 +169,7 @@ def main() -> None:
                 results = results[:args.limit]
 
                 if debug:
-                    print(f"\n[DEBUG] Cross-Encoder Rerank Results (top 5):")
+                    print("\n[DEBUG] Cross-Encoder Rerank Results (top 5):")
                     for idx, res in enumerate(results[:5], 1):
                         print(
                             f"  {idx}. {res['title']}, Cross-Encoder Score: {res['cross_encoder_score']:.3f}")
@@ -182,7 +183,8 @@ def main() -> None:
                     evaluation_prompt)
                 evaluation_scores = json.loads(evaluation_response.strip())
             for idx, res in enumerate(results, start=1):
-                title_with_score = f"{res['title']}: {evaluation_scores[idx-1]}/3" if evaluation_scores else res['title']
+                title_with_score = f"{res['title']}: {evaluation_scores[idx-1]}/3" \
+                    if evaluation_scores else res['title']
                 print(f"{idx}. {title_with_score}")
                 if not evaluation_scores:
                     if args.rerank_method == "individual":

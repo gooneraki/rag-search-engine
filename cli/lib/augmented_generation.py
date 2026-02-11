@@ -18,13 +18,13 @@ def rag_command(query: str, debug=False):
     genai_client = GenAIClient()
     answer = genai_client.generate_response(prompt)
 
-    print(f"\nSearch Results:")
+    print("\nSearch Results:")
     for doc in results:
         print(f"- {doc['title']}")
     print(f"\nRAG Response:\n{answer}")
 
 
-def assemble_document_query_prompt(query: str, docs) -> str:
+def assemble_document_query_prompt(query: str, docs: list[dict]) -> str:
     prompt = f"""Answer the question or provide information based on the provided documents. This should be tailored to Hoopla users. Hoopla is a movie streaming service.
 
 Query: {query}
