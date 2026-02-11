@@ -128,7 +128,8 @@ Return ONLY the scores in the same order you were given the documents. Return a 
 
 
 def assemble_document_query_prompt(query: str, docs: list[dict]) -> str:
-    prompt = f"""Answer the question or provide information based on the provided documents. This should be tailored to Hoopla users. Hoopla is a movie streaming service.
+    prompt = f"""Answer the question or provide information based on the provided documents.
+This should be tailored to Hoopla users. Hoopla is a movie streaming service.
 
 Query: {query}
 

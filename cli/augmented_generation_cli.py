@@ -1,3 +1,4 @@
+"""CLI for Retrieval Augmented Generation (RAG) operations."""
 import argparse
 
 from lib.augmented_generation import (rag_command, summarize_command)
@@ -14,9 +15,13 @@ def main():
     )
     rag_parser.add_argument("query", type=str, help="Search query for RAG")
 
-    summarize_parser = subparsers.add_parser("summarize")
-    summarize_parser.add_argument("query", type=str)
-    summarize_parser.add_argument("--limit", type=int, default=5, nargs="?")
+    summarize_parser = subparsers.add_parser(
+        "summarize", help="Summarize search results")
+    summarize_parser.add_argument(
+        "query", type=str, help="Search query for summarization")
+    summarize_parser.add_argument(
+        "--limit", type=int, default=5, nargs="?",
+        help="Number of search results to use for summarization (default: 5)")
 
     args = parser.parse_args()
 

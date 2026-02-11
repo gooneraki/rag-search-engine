@@ -1,3 +1,4 @@
+"""Implementation of Retrieval Augmented Generation (RAG) commands."""
 from lib.hybrid_search import HybridSearch
 from lib.search_utils import load_movies, DEFAULT_K_PARAMETER
 from lib.genai import (
