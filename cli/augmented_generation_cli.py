@@ -1,6 +1,6 @@
 import argparse
 
-from lib.augmented_generation import rag_command
+from lib.augmented_generation import (rag_command, summarize_command)
 
 
 def main():
@@ -14,6 +14,10 @@ def main():
     )
     rag_parser.add_argument("query", type=str, help="Search query for RAG")
 
+    summarize_parser = subparsers.add_parser("summarize")
+    summarize_parser.add_argument("query", type=str)
+    summarize_parser.add_argument("--limit", type=int, default=5, nargs="?")
+
     args = parser.parse_args()
 
     match args.command:
@@ -21,6 +25,11 @@ def main():
             query = args.query
 
             rag_command(query)
+
+        case "summarize":
+            query = args.query
+            limit = args.limit
+            summarize_command(query, limit)
         case _:
             parser.print_help()
 
