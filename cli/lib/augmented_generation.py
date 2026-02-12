@@ -4,11 +4,12 @@ from lib.search_utils import load_movies, DEFAULT_K_PARAMETER
 from lib.genai import (
     GenAIClient,
     assemble_document_query_prompt,
-    assemble_summarization_prompt)
+    assemble_summarization_prompt,
+    assemble_citations_prompt)
 
 
 def rag_command(query: str, debug=False):
-    # do RAG stuff here
+
     documents = load_movies()
     hybrid_search = HybridSearch(documents)
 
@@ -46,3 +47,19 @@ def summarize_command(query: str, limit: int):
     for doc in results:
         print(f"- {doc['title']}")
     print(f"\nLLM Summary:\n{summary}")
+
+
+def citations_command(query: str, limit: int):
+    documents = load_movies()
+    hybrid_search = HybridSearch(documents)
+    results = hybrid_search.rrf_search(
+        query, DEFAULT_K_PARAMETER, limit, debug=False)
+
+    prompt = assemble_citations_prompt(query, results)
+    genai_client = GenAIClient()
+    citations = genai_client.generate_response(prompt)
+
+    print("\nSearch Results:")
+    for doc in results:
+        print(f"- {doc['title']}")
+    print(f"\nLLM Answer:\n{citations}")
