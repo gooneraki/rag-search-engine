@@ -1,3 +1,6 @@
+"""
+Evaluation CLI module for assessing search quality using precision, recall, and F1 score metrics.
+"""
 import argparse
 from lib.search_utils import load_golden_dataset, load_movies
 from lib.hybrid_search import HybridSearch
