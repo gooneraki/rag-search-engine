@@ -97,14 +97,16 @@ class HybridSearch:
             print("\n[DEBUG] BM25 Search Results (top 5):")
             for idx, (doc_id, score) in enumerate(bm25_results[:5], 1):
                 print(
-                    f"  {idx}. Doc ID: {doc_id}, Title: {self.idx.docmap[doc_id]['title']}, Score: {score:.4f}")
+                    f"  {idx}. Doc ID: {doc_id}, "
+                    f"Title: {self.idx.docmap[doc_id]['title']}, Score: {score:.4f}")
             print(f"[DEBUG] BM25 Total Results: {len(bm25_results)}")
 
             print("\n[DEBUG] Semantic Search Results (top 5):")
             for idx, res in enumerate(sem_results[:5], 1):
                 doc = self.semantic_search.document_map[res['id']]
                 print(
-                    f"  {idx}. Doc ID: {res['id']}, Title: {doc['title']}, Score: {res['score']:.4f}")
+                    f"  {idx}. Doc ID: {res['id']}, "
+                    f"Title: {doc['title']}, Score: {res['score']:.4f}")
             print(f"[DEBUG] Semantic Total Results: {len(sem_results)}")
 
         combined_info: dict[int, dict] = {}
@@ -153,7 +155,9 @@ class HybridSearch:
             for idx, res in enumerate(results[:10], 1):
                 print(f"  {idx}. {res['title']}")
                 print(
-                    f"     RRF Score: {res['rrf_score']:.6f}, BM25 Rank: {res['bm25_rank']}, Semantic Rank: {res['semantic_rank']}")
+                    f"     RRF Score: {res['rrf_score']:.6f}, "
+                    f"BM25 Rank: {res['bm25_rank']}, "
+                    f"Semantic Rank: {res['semantic_rank']}")
             print(f"[DEBUG] Total RRF Results Before Limit: {len(results)}")
 
         return results[:limit]

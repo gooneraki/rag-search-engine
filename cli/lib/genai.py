@@ -180,7 +180,8 @@ Answer:"""
 def assemble_question_prompt(question: str, context) -> str:
     prompt = f"""Answer the user's question based on the provided movies that are available on Hoopla.
 
-This should be tailored to Hoopla users. Hoopla is a movie streaming service.
+This should be tailored to Hoopla users.
+Hoopla is a movie streaming service.
 
 Question: {question}
 
