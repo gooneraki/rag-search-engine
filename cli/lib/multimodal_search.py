@@ -1,6 +1,4 @@
 """Multimodal search module for generating image embeddings using CLIP models."""
-
-import numpy as np
 from PIL import Image
 from sentence_transformers import SentenceTransformer
 
