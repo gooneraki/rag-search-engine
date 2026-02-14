@@ -31,15 +31,17 @@ def main():
         "citations", help="Generate citations for search results")
     citations_parser.add_argument(
         "query", type=str, help="Search query for generating citations")
-    citations_parser.add_argument("--limit", type=int, default=5, nargs="?",
-                                  help="Number of search results to use for generating citations (default: 5)")
+    citations_parser.add_argument(
+        "--limit", type=int, default=5, nargs="?",
+        help="Number of search results to use for generating citations (default: 5)")
 
     question_parser = subparsers.add_parser(
-        "question", help="TO BE IMPLEMENTED")
+        "question", help="Answer a question using search results")
     question_parser.add_argument(
-        "question", type=str, help="TO BE IMPLEMENTED")
-    question_parser.add_argument("--limit", type=int, default=5, nargs="?",
-                                 help="TO BE IMPLEMENTED")
+        "question", type=str, help="Question to answer based on search results")
+    question_parser.add_argument(
+        "--limit", type=int, default=5, nargs="?",
+        help="Number of search results to use for answering (default: 5)")
 
     args = parser.parse_args()
 
