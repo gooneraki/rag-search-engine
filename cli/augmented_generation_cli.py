@@ -4,7 +4,8 @@ import argparse
 from lib.augmented_generation import (
     rag_command,
     summarize_command,
-    citations_command)
+    citations_command,
+    question_command)
 
 
 def main():
@@ -33,9 +34,19 @@ def main():
     citations_parser.add_argument("--limit", type=int, default=5, nargs="?",
                                   help="Number of search results to use for generating citations (default: 5)")
 
+    question_parser = subparsers.add_parser(
+        "question", help="TO BE IMPLEMENTED")
+    question_parser.add_argument(
+        "question", type=str, help="TO BE IMPLEMENTED")
+    question_parser.add_argument("--limit", type=int, default=5, nargs="?",
+                                 help="TO BE IMPLEMENTED")
+
     args = parser.parse_args()
 
     match args.command:
+        case "question":
+            question_command(args.question, args.limit)
+
         case "rag":
             query = args.query
             rag_command(query)

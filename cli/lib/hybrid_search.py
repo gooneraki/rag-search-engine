@@ -82,7 +82,7 @@ class HybridSearch:
         results.sort(key=lambda x: x['hybrid_score'], reverse=True)
         return results[:limit]
 
-    def rrf_search(self, query, k, limit, debug=False):
+    def rrf_search(self, query, k, limit, debug=False) -> list[dict]:
 
         if debug:
             print("\n[DEBUG] ========== RRF SEARCH PIPELINE ==========")
@@ -130,7 +130,7 @@ class HybridSearch:
             else:
                 combined_info[doc_id]['semantic_rank'] = rank
 
-        results = []
+        results: list[dict] = []
         for doc_id, info in combined_info.items():
             rrf_sc = 0.0
             if info['bm25_rank'] is not None:

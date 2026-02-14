@@ -5,7 +5,8 @@ from lib.genai import (
     GenAIClient,
     assemble_document_query_prompt,
     assemble_summarization_prompt,
-    assemble_citations_prompt)
+    assemble_citations_prompt,
+    assemble_question_prompt)
 
 
 def rag_command(query: str, debug=False):
@@ -63,3 +64,19 @@ def citations_command(query: str, limit: int):
     for doc in results:
         print(f"- {doc['title']}")
     print(f"\nLLM Answer:\n{citations}")
+
+
+def question_command(question: str, limit: int):
+    movies = load_movies()
+    hybrid_search = HybridSearch(movies)
+    results = hybrid_search.rrf_search(
+        question, DEFAULT_K_PARAMETER, limit, debug=False)
+
+    prompt = assemble_question_prompt(question, results)
+    genai_client = GenAIClient()
+    answer = genai_client.generate_response(prompt)
+
+    print("\nSearch Results:")
+    for doc in results:
+        print(f"- {doc['title']}")
+    print(f"\nAnswer:\n{answer}")
