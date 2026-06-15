@@ -127,6 +127,16 @@ cache/
 
 # ⚙️ Setup
 
+## 0️⃣ Extract Dataset
+
+The dataset is shipped as `data.7z`. Extract it before running anything:
+
+```bash
+7z x data.7z
+```
+
+This creates the `data/` folder containing `movies.json`, `stopwords.txt`, `golden_dataset.json`, and `paddington.jpeg`.
+
 ## 1️⃣ Create Virtual Environment
 
 ```bash
@@ -171,6 +181,16 @@ GEMINI_API_KEY="your_actual_api_key_here"
 ```
 
 ⚠️ **Important:** `.env` is automatically excluded via `.gitignore` to protect your API key.
+
+## 4️⃣ Build Search Index
+
+Generate the BM25 cache before running any search commands:
+
+```bash
+uv run cli/keyword_search_cli.py build
+```
+
+This creates the `cache/` folder with `index.pkl`, `docmap.pkl`, `doc_lengths.pkl`, and `term_frequencies.pkl`.
 
 ---
 
